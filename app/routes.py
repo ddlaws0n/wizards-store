@@ -40,7 +40,7 @@ def upload_to_gcs(first_name, last_name):
     # Upload the updated content to GCS
     blob.upload_from_string(updated_content)
 
-    return "Uploaded to GCS successfully."
+    return "Hurray! Account created successfully. We promise to store your data safely in the cloud ☁️" 
 
 @main_blueprint.route('/')
 def home():
