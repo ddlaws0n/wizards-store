@@ -1,34 +1,34 @@
 from flask import Blueprint, render_template, request, flash, jsonify
-import boto3
-from botocore.exceptions import NoCredentialsError
+from google.cloud import storage
+from google.cloud.exceptions import NotFound
+from gcs_utils import storage_client
 
 main_blueprint = Blueprint('main', __name__)
 register_blueprint = Blueprint('register', __name__)
 
-def upload_to_s3(first_name, last_name):
-    s3 = boto3.client('s3')
-    bucket_name = 'your-s3-bucket-name'
+def upload_to_gcs(first_name, last_name):
+    storage_client = storage_client()
+    bucket_name = 'wizard-bucket'
     file_name = 'registrations.txt'
     content = f"{first_name}, {last_name}\n"
 
+    bucket = storage_client.bucket(bucket_name)
+    blob = bucket.blob(file_name)
+
     try:
-        # Attempt to download the existing file from S3
-        s3.download_file(bucket_name, file_name, file_name)
-    except:
+        # Attempt to download the existing file from GCS
+        current_content = blob.download_as_text()
+    except NotFound:
         # If the file does not exist, create it
-        open(file_name, 'w').close()
+        current_content = ''
 
-    # Append the new record to the file
-    with open(file_name, 'a') as file:
-        file.write(content)
+    # Append the new record to the content
+    updated_content = current_content + content
 
-    try:
-        # Upload the updated file to S3
-        s3.upload_file(file_name, bucket_name, file_name)
-    except NoCredentialsError:
-        return "Credentials not available for S3 upload."
+    # Upload the updated content to GCS
+    blob.upload_from_string(updated_content)
 
-    return "Uploaded to S3 successfully."
+    return "Uploaded to GCS successfully."
 
 @main_blueprint.route('/')
 def home():
@@ -41,7 +41,7 @@ def register():
         last_name = request.form.get('last_name')
 
         # Process data and upload to S3
-        response_message = upload_to_s3(first_name, last_name)
+        response_message = upload_to_gcs(first_name, last_name)
 
         # Check if request is from HTMX
         if 'HX-Request' in request.headers:
