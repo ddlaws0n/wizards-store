@@ -39,3 +39,4 @@ jobs:
       - name: Deploy to App Engine
         run: |
           gcloud app deploy --image-url=europe-west1-docker.pkg.dev/argon-tuner-405813/wizard-team-garrrr/wizards-store:$GITHUB_SHA --quiet
+        working-directory: ./
