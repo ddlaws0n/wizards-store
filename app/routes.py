@@ -1,16 +1,28 @@
+import os
 from flask import Blueprint, render_template, request, flash, jsonify
 from google.cloud import storage
 from google.cloud.exceptions import NotFound
-from gcs_utils import storage_client
+from google.auth.exceptions import DefaultCredentialsError
 
 main_blueprint = Blueprint('main', __name__)
 register_blueprint = Blueprint('register', __name__)
 
+def create_storage_client():
+    try:
+        # Try to create a storage client using default credentials
+        storage_client = storage.Client()
+    except DefaultCredentialsError:
+        # If default credentials are not available, use the local key file
+        service_account_path = '/app/argon-tuner-405813-e6403f4068a4.json'
+        storage_client = storage.Client.from_service_account_json(service_account_path)
+    
+    return storage_client
+
 def upload_to_gcs(first_name, last_name):
-    storage_client = storage_client()
+    storage_client = create_storage_client()
     bucket_name = 'wizard-bucket'
     file_name = 'registrations.txt'
-    content = f"{first_name}, {last_name}\n"
+    content = f"{first_name} {last_name}\n"
 
     bucket = storage_client.bucket(bucket_name)
     blob = bucket.blob(file_name)
