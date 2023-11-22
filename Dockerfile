@@ -3,4 +3,4 @@ COPY . /app
 WORKDIR /app
 RUN pip install -r requirements.txt
 ENTRYPOINT ["python"]
-CMD ["run.py"]
+CMD gunicorn --bind :${PORT:-5000} run:app
