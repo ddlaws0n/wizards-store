@@ -24,8 +24,9 @@ jobs:
           service_account_key: ${{ secrets.GCP_SA_KEY }}
           export_default_credentials: true
           
-      - name: Build Docker Image
-        run: docker build -t $IMAGE_TAG .
+          - name: Build Docker Image
+          run: docker build -t europe-west1-docker.pkg.dev/argon-tuner-405813/wizard-team-garrrr/wizards-store:${{ github.sha }} .
+  
 
       - name: Download Wiz CLI
         run: curl -o wizcli https://wizcli.app.wiz.io/latest/wizcli && chmod +x wizcli
